@@ -7,12 +7,12 @@
     "build": "npm install && npm run migrate && npm run build"
   },
   "dependencies": {
-  "express": "^4.17.1",
-  "http": "latest",
-  "socket.io": "latest",
-  "cors": "latest",
-  "body-parser": "latest",
-  "uuid": "^8.3.2"
+    "express": "^4.17.1",
+    "http": "latest",
+    "socket.io": "latest",
+    "cors": "latest",
+    "body-parser": "latest",
+    "uuid": "^8.3.2"
 },
   "author": "Lee",
   "license": "ISC"
