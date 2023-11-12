@@ -1,33 +1,16 @@
 const express = require('express');
-const http = require('http'); // Import the 'http' module
+const http = require('http');
 const socketIO = require('socket.io');
-const cors = require('cors');
-const bodyParser = require('body-parser');
-const { v4: uuidv4 } = require('uuid');
 
 const app = express();
-
 const server = http.createServer(app);
-
 const io = socketIO(server);
 
-app.use(cors({
-  origin: 'https://darkchat.onreader.com',
-  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-  credentials: true,
-}));
-
-app.use(bodyParser.json());
-
-// const rooms = {};
-const connectedUsersMap = {};
-// const searchingUsers = [];
-// const chatSessions = {};
-// const lastKnownSizes = {};
+const PORT = 7069;
 
 app.get('/', (req, res) => {
-    res.send('running');
-}); 
+  res.send('DarkChat Server is running.');
+});
 
 // Listen for incoming connections on the server
 io.on('connection', (socket) => {
@@ -197,7 +180,6 @@ io.on('connection', (socket) => {
 //     return uuidv4().replace(/-/g, '').substring(0, idLength);
 // }
 
-const PORT = 7069;
 server.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running on http://localhost:${PORT}`);
 });
