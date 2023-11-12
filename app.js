@@ -13,6 +13,9 @@ const io = require("socket.io")(server,{
   }
 });
 
+const connectedUser = {};
+
+
 // Listen for incoming connections on the server
 io.on('connection', (socket) => {
     // Log the IP address of the connected user
