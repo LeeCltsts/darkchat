@@ -13,7 +13,7 @@ const io = require("socket.io")(server,{
   }
 });
 
-const connectedUser = {};
+const connectedUsers = {};
 
 
 // Listen for incoming connections on the server
