@@ -1,24 +1,26 @@
 const express = require('express');
-const http = require('http');
 const socketIO = require('socket.io');
-const WebSocket = require('ws')
 const PORT = 7069;
+const INDEX = '/index.html';
 
-const wss = new WebSocket.Server({ port: PORT })
-
-
-app.get('/', (req, res) => {
-  res.send('DarkChat Server is running.');
+const server = express()
+  .use((req, res) => res.sendFile(INDEX, { root: __dirname }))
+  .listen(PORT, () => console.log(`Listening on ${PORT}`));
+const io = require("socket.io")(server,{
+  cors: {
+    origins: "*:*",
+    methods: ["GET", "POST"]
+  }
 });
 
 // Listen for incoming connections on the server
-ws.on('connection', (socket) => {
+io.on('connection', (socket) => {
     // Log the IP address of the connected user
     const clientIp = socket.handshake.address;
     console.log(`A user connected from IP: ${clientIp}`);
   
     // Listen for the 'user searching' event and associate the user ID with the socket ID
-    ws.on('user searching', (userId) => {
+    io.on('user searching', (userId) => {
         userSocketMap[userId] = {"Searching": true, "Messages": [], "ConnectedClient": ''};
         console.log(`User ${userId} is searching for a user`);
     });
