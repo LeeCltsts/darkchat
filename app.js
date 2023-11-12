@@ -2,10 +2,10 @@ const express = require('express');
 const http = require('http');
 const socketIO = require('socket.io');
 const WebSocket = require('ws')
+const PORT = 7069;
 
 const wss = new WebSocket.Server({ port: PORT })
 
-const PORT = 7069;
 
 app.get('/', (req, res) => {
   res.send('DarkChat Server is running.');
