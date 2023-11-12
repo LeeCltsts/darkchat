@@ -1,10 +1,9 @@
 const express = require('express');
 const http = require('http');
 const socketIO = require('socket.io');
+const WebSocket = require('ws')
 
-const app = express();
-const server = http.createServer(app);
-const io = socketIO(server);
+const wss = new WebSocket.Server({ port: PORT })
 
 const PORT = 7069;
 
@@ -13,13 +12,13 @@ app.get('/', (req, res) => {
 });
 
 // Listen for incoming connections on the server
-io.on('connection', (socket) => {
+ws.on('connection', (socket) => {
     // Log the IP address of the connected user
     const clientIp = socket.handshake.address;
     console.log(`A user connected from IP: ${clientIp}`);
   
     // Listen for the 'user searching' event and associate the user ID with the socket ID
-    socket.on('user searching', (userId) => {
+    ws.on('user searching', (userId) => {
         userSocketMap[userId] = {"Searching": true, "Messages": [], "ConnectedClient": ''};
         console.log(`User ${userId} is searching for a user`);
     });
@@ -179,7 +178,3 @@ io.on('connection', (socket) => {
 //     const idLength = 26;
 //     return uuidv4().replace(/-/g, '').substring(0, idLength);
 // }
-
-server.listen(PORT, '0.0.0.0', () => {
-    console.log(`Server running on http://localhost:${PORT}`);
-});
