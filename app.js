@@ -1,16 +1,18 @@
 const express = require('express');
-const http = require('http');
+const http = require('http'); // Import the 'http' module
 const socketIO = require('socket.io');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const { v4: uuidv4 } = require('uuid');
 
 const app = express();
-const server = createServer(app);
+
+const server = http.createServer(app);
+
 const io = socketIO(server);
 
 app.use(cors());
-app.use(json());
+app.use(bodyParser.json());
 
 // const rooms = {};
 const connectedUsersMap = {};
