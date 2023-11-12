@@ -24,12 +24,12 @@ io.on('connection', (socket) => {
     console.log(`A user connected from IP: ${clientIp}`);
 
     socket.on('clientID', (userId) => {
-        userSocketMap[userId] = {"Searching": false, "Messages": [], "ConnectedClient": ''};
+        connectedUsers[userId] = {"Searching": false, "Messages": [], "ConnectedClient": ''};
     })
   
     // Listen for the 'user searching' event and associate the user ID with the socket ID
     socket.on('user searching', (userId) => {
-        userSocketMap[userId] = {"Searching": true, "Messages": [], "ConnectedClient": ''};
+        connectedUsers[userId] = {"Searching": true, "Messages": [], "ConnectedClient": ''};
         console.log(`User ${userId} is searching for a user`);
     });
 
