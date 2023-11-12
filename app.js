@@ -23,11 +23,11 @@ io.on('connection', (socket) => {
 
     socket.on('clientID', (userId) => {
         connectedUsers[userId] = {"Searching": false, "Messages": [], "ConnectedClient": ''};
-        console.log(`A user connected`)
+        console.log(`${userId} Connected.`)
     })
   
     // Listen for the 'user searching' event and associate the user ID with the socket ID
-    socket.on('user searching', (userId) => {
+    socket.on('userSearching', (userId) => {
         connectedUsers[userId] = {"Searching": true, "Messages": [], "ConnectedClient": ''};
         console.log(`User ${userId} is searching for a user`);
     });
