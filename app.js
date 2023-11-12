@@ -11,7 +11,12 @@ const server = http.createServer(app);
 
 const io = socketIO(server);
 
-app.use(cors());
+app.use(cors({
+  origin: 'https://darkchat.onreader.com',
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
+  credentials: true,
+}));
+
 app.use(bodyParser.json());
 
 // const rooms = {};
