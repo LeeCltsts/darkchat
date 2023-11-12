@@ -1,9 +1,9 @@
-import express from 'express';
-import { createServer } from 'http';
-import socketIO from 'socket.io';
-import cors from 'cors';
-import { json } from 'body-parser';
-import { v4 as uuidv4 } from 'uuid';
+const express = require('express');
+const http = require('http');
+const socketIO = require('socket.io');
+const cors = require('cors');
+const bodyParser = require('body-parser');
+const { v4: uuidv4 } = require('uuid');
 
 const app = express();
 const server = createServer(app);
