@@ -1,238 +1,194 @@
-const express = require('express');
-const http = require('http');
-const socketIO = require('socket.io');
-const cors = require('cors');
-const bodyParser = require('body-parser');
-const { v4: uuidv4 } = require('uuid');
+import express from 'express';
+import { createServer } from 'http';
+import socketIO from 'socket.io';
+import cors from 'cors';
+import { json } from 'body-parser';
+import { v4 as uuidv4 } from 'uuid';
 
 const app = express();
-const server = http.createServer(app);
+const server = createServer(app);
 const io = socketIO(server);
 
 app.use(cors());
-app.use(bodyParser.json());
+app.use(json());
 
-const rooms = {};
-const connectedUsers = [];
-const searchingUsers = [];
-const chatSessions = {};
-const lastKnownSizes = {};
+// const rooms = {};
+const connectedUsersMap = {};
+// const searchingUsers = [];
+// const chatSessions = {};
+// const lastKnownSizes = {};
 
 app.get('/', (req, res) => {
     res.send('running');
-});
+}); 
 
+// Listen for incoming connections on the server
 io.on('connection', (socket) => {
-    socket.on('message', (msg) => {
-        console.log('Message:', msg);
-        io.emit('message', msg);
+    // Log the IP address of the connected user
+    const clientIp = socket.handshake.address;
+    console.log(`A user connected from IP: ${clientIp}`);
+  
+    // Listen for the 'user searching' event and associate the user ID with the socket ID
+    socket.on('user searching', (userId) => {
+        userSocketMap[userId] = {"Searching": true, "Messages": [], "ConnectedClient": ''};
+        console.log(`User ${userId} is searching for a user`);
     });
-});
+  });
 
-function eventStream(res, room_id) {
-    const intervalId = setInterval(() => {
-        const messages = rooms[room_id] || [];
-        const currentSize = messages.length;
+// app.get('/get_messages', (req, res) => {
+//     const room_id = parseInt(req.query.room_id);
+//     const messages = rooms[room_id] || [];
+//     res.json({ messages, room_id });
+// });
 
-        if (currentSize > (lastKnownSizes[room_id] || 0)) {
-            lastKnownSizes[room_id] = currentSize;
-            res.write(`data: ${JSON.stringify({ messages })}\n\n`);
-        }
-    }, 1000);
+// app.get('/get_stranger_messages', (req, res) => {
+//     const user_id = req.query.user_id;
+//     const stranger_id = req.query.stranger_id;
+//     if (chatSessions[user_id] && chatSessions[user_id]['id'] === stranger_id) {
+//         const messages = chatSessions[stranger_id]['messages'];
+//         res.json({ messages });
+//     } else {
+//         res.status(404).json({ error: 'User not found or not in a chat session' });
+//     }
+// });
 
-    res.on('close', () => {
-        clearInterval(intervalId);
-    });
-}
+// app.get('/fetch_rooms', (req, res) => {
+//     res.json({ rooms: Object.keys(rooms) });
+// });
 
-app.get('/get_messages_sse', (req, res) => {
-    const room_id = parseInt(req.query.room_id);
-    res.writeHead(200, {
-        'Content-Type': 'text/event-stream',
-        'Cache-Control': 'no-cache',
-        'Connection': 'keep-alive',
-    });
-    eventStream(res, room_id);
-});
+// app.post('/create_room', (req, res) => {
+//     const room_id = Object.keys(rooms).length + 1;
+//     rooms[room_id] = [];
+//     res.json({ roomId: room_id });
+// });
 
-function strangerEventStream(res, user_id) {
-    const intervalId = setInterval(() => {
-        if (user_id in chatSessions) {
-            const stranger_id = chatSessions[user_id]['id'];
-            const messages = chatSessions[stranger_id]['messages'];
-            res.write(`data: ${JSON.stringify({ messages })}\n\n`);
-        }
-    }, 1000);
+// app.post('/send_message', (req, res) => {
+//     const { message, msg_id, user_id } = req.body;
+//     const room_id = parseInt(req.query.room_id);
 
-    res.on('close', () => {
-        clearInterval(intervalId);
-    });
-}
+//     if (rooms[room_id]) {
+//         rooms[room_id].push({ message, msg_id, user_id });
+//         res.json({ message, msg_id, user_id });
+//     } else {
+//         res.status(404).json({ error: 'Room not found' });
+//     }
+// });
 
-app.get('/get_stranger_messages_sse', (req, res) => {
-    const user_id = req.query.user_id;
-    res.writeHead(200, {
-        'Content-Type': 'text/event-stream',
-        'Cache-Control': 'no-cache',
-        'Connection': 'keep-alive',
-    });
-    strangerEventStream(res, user_id);
-});
+// app.post('/send_stranger_message', (req, res) => {
+//     const { message, msg_id, user_id, recipient_id } = req.body;
 
-app.get('/get_messages', (req, res) => {
-    const room_id = parseInt(req.query.room_id);
-    const messages = rooms[room_id] || [];
-    res.json({ messages, room_id });
-});
+//     if (chatSessions[user_id] && chatSessions[user_id]['id'] === recipient_id) {
+//         chatSessions[user_id]['messages'].push({ message, msg_id, user_id });
+//         res.json({ message, msg_id, user_id });
+//     } else {
+//         res.status(404).json({ error: 'User not found or not in a chat session' });
+//     }
+// });
 
-app.get('/get_stranger_messages', (req, res) => {
-    const user_id = req.query.user_id;
-    const stranger_id = req.query.stranger_id;
-    if (chatSessions[user_id] && chatSessions[user_id]['id'] === stranger_id) {
-        const messages = chatSessions[stranger_id]['messages'];
-        res.json({ messages });
-    } else {
-        res.status(404).json({ error: 'User not found or not in a chat session' });
-    }
-});
+// app.all('/check_queue', (req, res) => {
+//     if (req.method === 'POST') {
+//         const data = req.body;
 
-app.get('/fetch_rooms', (req, res) => {
-    res.json({ rooms: Object.keys(rooms) });
-});
+//         if (searchingUsers.length > 0) {
+//             const user = {
+//                 id: data.user_id,
+//                 interests: new Set(data.interests),
+//             };
 
-app.post('/create_room', (req, res) => {
-    const room_id = Object.keys(rooms).length + 1;
-    rooms[room_id] = [];
-    res.json({ roomId: room_id });
-});
+//             const stranger = findStranger(user);
 
-app.post('/send_message', (req, res) => {
-    const { message, msg_id, user_id } = req.body;
-    const room_id = parseInt(req.query.room_id);
+//             if (stranger) {
+//                 chatSessions[user.id] = { id: stranger, messages: [] };
+//                 getAndPopUserById(searchingUsers, stranger);
+//                 res.json({ message: stranger });
+//                 return;
+//             }
+//         }
 
-    if (rooms[room_id]) {
-        rooms[room_id].push({ message, msg_id, user_id });
-        res.json({ message, msg_id, user_id });
-    } else {
-        res.status(404).json({ error: 'Room not found' });
-    }
-});
+//         res.json({ message: 'Match not found' });
+//     } else {
+//         res.json({ message: 'Invalid method' });
+//     }
+// });
 
-app.post('/send_stranger_message', (req, res) => {
-    const { message, msg_id, user_id, recipient_id } = req.body;
+// app.post('/connect', (req, res) => {
+//     try {
+//         const data = req.body;
 
-    if (chatSessions[user_id] && chatSessions[user_id]['id'] === recipient_id) {
-        chatSessions[user_id]['messages'].push({ message, msg_id, user_id });
-        res.json({ message, msg_id, user_id });
-    } else {
-        res.status(404).json({ error: 'User not found or not in a chat session' });
-    }
-});
+//         if (!data.user_id || !data.interests) {
+//             res.status(400).json({ error: 'Invalid request data' });
+//             return;
+//         }
 
-app.all('/check_queue', (req, res) => {
-    if (req.method === 'POST') {
-        const data = req.body;
+//         const user = {
+//             id: data.user_id,
+//             interests: new Set(data.interests),
+//         };
 
-        if (searchingUsers.length > 0) {
-            const user = {
-                id: data.user_id,
-                interests: new Set(data.interests),
-            };
+//         connectedUsers.push(user);
+//         searchingUsers.push(user);
+//         res.json({ message: 'Connected to server' });
+//     } catch (error) {
+//         res.status(500).json({ error: error.toString() });
+//     }
+// });
 
-            const stranger = findStranger(user);
+// app.post('/disconnect', (req, res) => {
+//     const user_id = req.body.id;
 
-            if (stranger) {
-                chatSessions[user.id] = { id: stranger, messages: [] };
-                getAndPopUserById(searchingUsers, stranger);
-                res.json({ message: stranger });
-                return;
-            }
-        }
+//     if (user_id in chatSessions) {
+//         delete chatSessions[user_id];
+//     }
 
-        res.json({ message: 'Match not found' });
-    } else {
-        res.json({ message: 'Invalid method' });
-    }
-});
+//     const user = getAndPopUserById(connectedUsers, user_id);
+//     getAndPopUserById(searchingUsers, user_id);
 
-app.post('/connect', (req, res) => {
-    try {
-        const data = req.body;
+//     if (user) {
+//         res.json({ message: 'Disconnected from server' });
+//     } else {
+//         res.json({ message: 'Not currently in a chat session or connected to server' });
+//     }
+// });
 
-        if (!data.user_id || !data.interests) {
-            res.status(400).json({ error: 'Invalid request data' });
-            return;
-        }
+// app.get('/check_stranger_disconnect', (req, res) => {
+//     const stranger_id = req.query.id;
 
-        const user = {
-            id: data.user_id,
-            interests: new Set(data.interests),
-        };
+//     if (!connectedUsers.some((user) => user.id === stranger_id)) {
+//         getAndPopUserById(connectedUsers, stranger_id);
+//         res.json({ disconnected: true });
+//     } else {
+//         res.json({ disconnected: false });
+//     }
+// });
 
-        connectedUsers.push(user);
-        searchingUsers.push(user);
-        res.json({ message: 'Connected to server' });
-    } catch (error) {
-        res.status(500).json({ error: error.toString() });
-    }
-});
+// function findStranger(user) {
+//     const matchingUsers = searchingUsers.filter(
+//         (u) => u.id !== user.id && [...u.interests].some((interest) => user.interests.has(interest))
+//     );
 
-app.post('/disconnect', (req, res) => {
-    const user_id = req.body.id;
+//     if (matchingUsers.length > 0) {
+//         const stranger = matchingUsers[Math.floor(Math.random() * matchingUsers.length)];
+//         return stranger.id;
+//     } else {
+//         return null;
+//     }
+// }
 
-    if (user_id in chatSessions) {
-        delete chatSessions[user_id];
-    }
+// function getAndPopUserById(userList, userId) {
+//     const index = userList.findIndex((user) => user.id === userId);
 
-    const user = getAndPopUserById(connectedUsers, user_id);
-    getAndPopUserById(searchingUsers, user_id);
+//     if (index !== -1) {
+//         const poppedUser = userList.splice(index, 1)[0];
+//         return poppedUser.id;
+//     }
 
-    if (user) {
-        res.json({ message: 'Disconnected from server' });
-    } else {
-        res.json({ message: 'Not currently in a chat session or connected to server' });
-    }
-});
+//     return null;
+// }
 
-app.get('/check_stranger_disconnect', (req, res) => {
-    const stranger_id = req.query.id;
-
-    if (!connectedUsers.some((user) => user.id === stranger_id)) {
-        getAndPopUserById(connectedUsers, stranger_id);
-        res.json({ disconnected: true });
-    } else {
-        res.json({ disconnected: false });
-    }
-});
-
-function findStranger(user) {
-    const matchingUsers = searchingUsers.filter(
-        (u) => u.id !== user.id && [...u.interests].some((interest) => user.interests.has(interest))
-    );
-
-    if (matchingUsers.length > 0) {
-        const stranger = matchingUsers[Math.floor(Math.random() * matchingUsers.length)];
-        return stranger.id;
-    } else {
-        return null;
-    }
-}
-
-function getAndPopUserById(userList, userId) {
-    const index = userList.findIndex((user) => user.id === userId);
-
-    if (index !== -1) {
-        const poppedUser = userList.splice(index, 1)[0];
-        return poppedUser.id;
-    }
-
-    return null;
-}
-
-function createId() {
-    const idLength = 26;
-    return uuidv4().replace(/-/g, '').substring(0, idLength);
-}
+// function createId() {
+//     const idLength = 26;
+//     return uuidv4().replace(/-/g, '').substring(0, idLength);
+// }
 
 const PORT = 7069;
 server.listen(PORT, '0.0.0.0', () => {
