@@ -4,7 +4,7 @@
   "description": "Your project description",
   "main": "app.js",
   "scripts": {
-    "deploy": "npm install && npm run migrate && npm run build"
+    "build": "npm install && npm run migrate && npm run build"
   },
   "dependencies": {
     "express": "^4.17.1"
