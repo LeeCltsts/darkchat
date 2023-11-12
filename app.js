@@ -21,10 +21,9 @@ io.on('connection', (socket) => {
     // Log the IP address of the connected user
     const clientIp = socket.handshake.address;
 
-    console.log(`A user connected from IP: ${clientIp}`);
-
     socket.on('clientID', (userId) => {
         connectedUsers[userId] = {"Searching": false, "Messages": [], "ConnectedClient": ''};
+        console.log(`A user connected`)
     })
   
     // Listen for the 'user searching' event and associate the user ID with the socket ID
