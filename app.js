@@ -1,5 +1,4 @@
 const express = require('express');
-const socketIO = require('socket.io');
 const PORT = 7069;
 const INDEX = '/';
 
@@ -18,14 +17,31 @@ const io = require("socket.io")(server,{
 io.on('connection', (socket) => {
     // Log the IP address of the connected user
     const clientIp = socket.handshake.address;
+
     console.log(`A user connected from IP: ${clientIp}`);
+
+    socket.on('clientID', (userId) => {
+        userSocketMap[userId] = {"Searching": false, "Messages": [], "ConnectedClient": ''};
+    })
   
     // Listen for the 'user searching' event and associate the user ID with the socket ID
-    io.on('user searching', (userId) => {
+    socket.on('user searching', (userId) => {
         userSocketMap[userId] = {"Searching": true, "Messages": [], "ConnectedClient": ''};
         console.log(`User ${userId} is searching for a user`);
     });
+
+    // Listen for the 'disconnect' event
+    socket.on('disconnect', (userId) => {
+        console.log(`Client disconnected with ID: ${userId}`);
+
+        // Remove the user from the database
+        if (connectedUsers[userId]) {
+            delete connectedUsers[userId];
+            console.log(`Removed user with ID: ${clientId} from the database`);
+        }
+    });
   });
+
 
 // app.get('/get_messages', (req, res) => {
 //     const room_id = parseInt(req.query.room_id);
