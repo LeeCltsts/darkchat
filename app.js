@@ -34,7 +34,7 @@ io.on('connection', (socket) => {
     });
 
     // Listen for the 'disconnect' event
-    socket.on('disconnect', (userId) => {
+    socket.on('disconnectFromServer', (userId) => {
         console.log(`Client disconnected with ID: ${userId}`);
 
         // Remove the user from the database
