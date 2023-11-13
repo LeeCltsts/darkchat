@@ -24,11 +24,6 @@ io.on('connection', (socket) => {
     socket.on('clientID', (userId) => {
         connectedUsers[userId] = {"Searching": false, "Messages": [], "ConnectedClient": ''};
         console.log(`${userId} Connected.`)
-        for (const key in connectedUsers) {
-            if (connectedUsers.hasOwnProperty(key)) {
-              console.log(`${key}: ${connectedUsers[key]}`);
-            }
-          }
     })
   
     socket.on('userSearching', (userId) => {
@@ -37,26 +32,14 @@ io.on('connection', (socket) => {
     });
 
     // Listen for the 'disconnect' event
-    socket.on('disconnectFromServer', (userId) => {
+    socket.on('disconnect', (userId) => {
         console.log(`Client disconnected with ID: ${userId}`);
-        for (const key in connectedUsers) {
-            if (connectedUsers.hasOwnProperty(key)) {
-              console.log(`${key}: ${connectedUsers[key]}`);
-            }
-        }
         // Remove the user from the database
         if (connectedUsers[userId]) {
-            delete connectedUsers[userId];
-            console.log(`Removed user with ID: ${userId} from the database`);
-            for (const key in connectedUsers) {
-                if (connectedUsers.hasOwnProperty(key)) {
-                  console.log(`${key}: ${connectedUsers[key]}`);
-                }
-              }        
+            delete connectedUsers[userId];  
         }
     });
   });
-
 
 // app.get('/get_messages', (req, res) => {
 //     const room_id = parseInt(req.query.room_id);
