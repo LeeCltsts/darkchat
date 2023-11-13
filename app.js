@@ -38,7 +38,7 @@ io.on('connection', (socket) => {
         
         // Retrieve the userId associated with the disconnected socket
         const disconnectedUserId = Object.keys(connectedUsers).find(
-            userId => connectedUsers[userId].ConnectedClient === socket.id
+            userId => connectedUsers[userId].ConnectedClientID === socket.id
         );
 
         // If the user was found, remove them from the connectedUsers object
