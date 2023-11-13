@@ -23,6 +23,8 @@ io.on('connection', (socket) => {
     socket.on('clientID', (userId) => {
         connectedUsers[userId] = {"Searching": false, "Messages": [], "ConnectedClientID": connectedUserId, "UserID": userID, "StrangerID": null};
         console.log(`${userId} Connected.`)
+        
+        // Emit to all the
     })
   
     socket.on('userSearching', (userId) => {
@@ -33,25 +35,39 @@ io.on('connection', (socket) => {
         console.log(`User ${userId} is searching for a user`);
     });
 
-    socket.on('')
-
     // Listen for disconnections
     socket.on('disconnect', () => {
         // Handle disconnection logic here
         console.log(`${socket.id} disconnected.`);
         
         // Retrieve the userId associated with the disconnected socket
-        const disconnectedUserId = Object.keys(connectedUsers).find(
-            userId => connectedUsers[userId].ConnectedClientID === socket.id
-        );
-
-        // If the user was found, remove them from the connectedUsers object
+        const disconnectedUserId = getUserBySocket;
+        const disconnectedUser = connectedUsers[disconnectedUserId]
+        
+        // If the user was found, handle their disconnection
         if (disconnectedUserId) {
-            delete connectedUsers[disconnectedUserId];
+            handleDisconnect(disconnectedUser);
+          
             console.log(`User ${disconnectedUserId} has been removed from connected users.`);
         }
     });
   });
+
+async function handleDisconnect(disconnectedUser){
+  // Check if the user is in a chat with a Stranger
+  if (disconnectedUser['StrangerID']){
+    // Disocnnect from the stranger
+    let stranger = currentUsers[disconnectedUser['StrangerID']]
+    stranger['StrangerID'] = null
+    
+    // Disconnect the stranger 
+    const strangerSocket = io.sockets.sockets.get(stranger['ConnectedClientID']);
+    strangerSocket.emit("DisconnectFromStranger")
+  }
+  
+  delete connectedUsers[disconnectedUserId];
+
+}
 
 async function searchForStranger(ourUser){
   let usersArray = Object.values(currentUsers).sort((a, b) => a.ConnectedClientID - b.ConnectedClientID);
@@ -80,6 +96,15 @@ async function binarySearch(arr, target) {
     }
   }
   return null;
+}
+
+// Return the user by a socket id
+async function getUserBySocket(socketId){
+  const userId = Object.keys(connectedUsers).find(
+            userId => connectedUsers[userId].ConnectedClientID === socket.id
+        );
+        
+  return userId;
 }
 
 // app.get('/get_messages', (req, res) => {
