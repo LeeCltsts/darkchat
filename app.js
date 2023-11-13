@@ -23,10 +23,9 @@ io.on('connection', (socket) => {
 
     socket.on('clientID', (userId) => {
         connectedUsers[userId] = {"Searching": false, "Messages": [], "ConnectedClient": ''};
-        console.log(`${userId} Connected.`)
+        console.log(`${userId} Connected.\n${connectedUsers}`)
     })
   
-    // Listen for the 'user searching' event and associate the user ID with the socket ID
     socket.on('userSearching', (userId) => {
         connectedUsers[userId] = {"Searching": true, "Messages": [], "ConnectedClient": ''};
         console.log(`User ${userId} is searching for a user`);
@@ -35,11 +34,13 @@ io.on('connection', (socket) => {
     // Listen for the 'disconnect' event
     socket.on('disconnectFromServer', (userId) => {
         console.log(`Client disconnected with ID: ${userId}`);
+        console.log(`${connectedUsers}`)
 
         // Remove the user from the database
         if (connectedUsers[userId]) {
             delete connectedUsers[userId];
             console.log(`Removed user with ID: ${userId} from the database`);
+            console.log(`${connectedUsers}`)
         }
     });
   });
