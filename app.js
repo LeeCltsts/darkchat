@@ -19,24 +19,32 @@ const connectedUsers = {};
 // Listen for incoming connections on the server
 io.on('connection', (socket) => {
     // Log the IP address of the connected user
-    const clientIp = socket.handshake.address;
+    let connectedUserId = socket.id;
 
     socket.on('clientID', (userId) => {
-        connectedUsers[userId] = {"Searching": false, "Messages": [], "ConnectedClient": ''};
+        connectedUsers[userId] = {"Searching": false, "Messages": [], "ConnectedClientID": connectedUserId};
         console.log(`${userId} Connected.`)
     })
   
     socket.on('userSearching', (userId) => {
-        connectedUsers[userId] = {"Searching": true, "Messages": [], "ConnectedClient": ''};
+        connectedUsers[userId] = {"Searching": true, "Messages": [], "ConnectedClientID": connectedUserId};
         console.log(`User ${userId} is searching for a user`);
     });
 
-    // Listen for the 'disconnect' event
-    socket.on('disconnect', (userId) => {
-        console.log(`Client disconnected with ID: ${userId}`);
-        // Remove the user from the database
-        if (connectedUsers[userId]) {
-            delete connectedUsers[userId];  
+    // Listen for disconnections
+    socket.on('disconnect', () => {
+        // Handle disconnection logic here
+        console.log(`${socket.id} disconnected.`);
+        
+        // Retrieve the userId associated with the disconnected socket
+        const disconnectedUserId = Object.keys(connectedUsers).find(
+            userId => connectedUsers[userId].ConnectedClient === socket.id
+        );
+
+        // If the user was found, remove them from the connectedUsers object
+        if (disconnectedUserId) {
+            delete connectedUsers[disconnectedUserId];
+            console.log(`User ${disconnectedUserId} has been removed from connected users.`);
         }
     });
   });
