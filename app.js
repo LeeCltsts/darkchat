@@ -24,9 +24,9 @@ io.on('connection', (socket) => {
     socket.on('clientID', (userId) => {
         connectedUsers[userId] = {"Searching": false, "Messages": [], "ConnectedClient": ''};
         console.log(`${userId} Connected.`)
-        for (const key in myDictionary) {
-            if (myDictionary.hasOwnProperty(key)) {
-              console.log(`${key}: ${myDictionary[key]}`);
+        for (const key in connectedUsers) {
+            if (connectedUsers.hasOwnProperty(key)) {
+              console.log(`${key}: ${connectedUsers[key]}`);
             }
           }
     })
@@ -39,18 +39,18 @@ io.on('connection', (socket) => {
     // Listen for the 'disconnect' event
     socket.on('disconnectFromServer', (userId) => {
         console.log(`Client disconnected with ID: ${userId}`);
-        for (const key in myDictionary) {
-            if (myDictionary.hasOwnProperty(key)) {
-              console.log(`${key}: ${myDictionary[key]}`);
+        for (const key in connectedUsers) {
+            if (connectedUsers.hasOwnProperty(key)) {
+              console.log(`${key}: ${connectedUsers[key]}`);
             }
         }
         // Remove the user from the database
         if (connectedUsers[userId]) {
             delete connectedUsers[userId];
             console.log(`Removed user with ID: ${userId} from the database`);
-            for (const key in myDictionary) {
-                if (myDictionary.hasOwnProperty(key)) {
-                  console.log(`${key}: ${myDictionary[key]}`);
+            for (const key in connectedUsers) {
+                if (connectedUsers.hasOwnProperty(key)) {
+                  console.log(`${key}: ${connectedUsers[key]}`);
                 }
               }        
         }
