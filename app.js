@@ -15,21 +15,25 @@ const io = require("socket.io")(server,{
 
 const connectedUsers = {};
 
-
 // Listen for incoming connections on the server
 io.on('connection', (socket) => {
-    // Log the IP address of the connected user
+    // Log the ID address of the connected user
     let connectedUserId = socket.id;
 
     socket.on('clientID', (userId) => {
-        connectedUsers[userId] = {"Searching": false, "Messages": [], "ConnectedClientID": connectedUserId};
+        connectedUsers[userId] = {"Searching": false, "Messages": [], "ConnectedClientID": connectedUserId, "UserID": userID, "StrangerID": null};
         console.log(`${userId} Connected.`)
     })
   
     socket.on('userSearching', (userId) => {
-        connectedUsers[userId] = {"Searching": true, "Messages": [], "ConnectedClientID": connectedUserId};
+        connectedUsers[userId] = {"Searching": true, "Messages": [], "ConnectedClientID": connectedUserId, "UserID": userID, "StrangerID": null};
+
+        searchForStranger();
+      
         console.log(`User ${userId} is searching for a user`);
     });
+
+    socket.on('')
 
     // Listen for disconnections
     socket.on('disconnect', () => {
@@ -48,6 +52,35 @@ io.on('connection', (socket) => {
         }
     });
   });
+
+async function searchForStranger(ourUser){
+  let usersArray = Object.values(currentUsers).sort((a, b) => a.ConnectedClientID - b.ConnectedClientID);
+
+  const foundUser = binarySearch(usersArray, true);
+
+  currentUsers[ourUser]['Searching'] = false;
+  currentUsers[ourUser]['StrangerID'] = foundUser['UserID']
+
+  foundUser['Searching'] = false;
+  foundUser['StrangerID'] = currentUsers[ourUser]['UserID']
+}
+
+// Binary Search
+async function binarySearch(arr, target) {
+  let low = 0;
+  let high = arr.length - 1;
+  while (low <= high) {
+    let mid = Math.floor((low + high) / 2);
+    if (arr[mid].Searching === target) {
+      return arr[mid];
+    } else if (arr[mid].ConnectedClientID < target) {
+      low = mid + 1;
+    } else {
+      high = mid - 1;
+    }
+  }
+  return null;
+}
 
 // app.get('/get_messages', (req, res) => {
 //     const room_id = parseInt(req.query.room_id);
