@@ -39,7 +39,7 @@ io.on('connection', (socket) => {
         // Remove the user from the database
         if (connectedUsers[userId]) {
             delete connectedUsers[userId];
-            console.log(`Removed user with ID: ${clientId} from the database`);
+            console.log(`Removed user with ID: ${userId} from the database`);
         }
     });
   });
