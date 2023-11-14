@@ -44,12 +44,9 @@
 const express = require('express');
 const PORT = 7069;
 const INDEX = '/';
-
 const server = express()
   .use((req, res) =>
-    res.sendFile(INDEX, {
-      root: __dirname,
-    })
+    res.sendFile('index.html', { root: path.join(__dirname, 'src') })
   )
   .listen(PORT, () => console.log(`Listening on ${PORT}`));
 
