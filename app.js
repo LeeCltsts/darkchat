@@ -21,14 +21,14 @@ io.on('connection', (socket) => {
     let connectedUserId = socket.id;
 
     socket.on('clientID', (userId) => {
-        connectedUsers[userId] = {"Searching": false, "Messages": [], "ConnectedClientID": connectedUserId, "UserID": userID, "StrangerID": null};
+        connectedUsers[userId] = {"Searching": false, "Messages": [], "ConnectedClientID": connectedUserId, "UserID": userId, "StrangerID": null};
         console.log(`${userId} Connected.`)
         
         // Emit to all the
     })
   
     socket.on('userSearching', (userId) => {
-        connectedUsers[userId] = {"Searching": true, "Messages": [], "ConnectedClientID": connectedUserId, "UserID": userID, "StrangerID": null};
+        connectedUsers[userId] = {"Searching": true, "Messages": [], "ConnectedClientID": connectedUserId, "UserID": userId, "StrangerID": null};
 
         searchForStranger();
       
